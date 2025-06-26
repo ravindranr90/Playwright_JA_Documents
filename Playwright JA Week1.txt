@@ -1,0 +1,246 @@
+
+
+Q1.What is hoisting in JavaScript, and how does it affect Playwright test execution.
+
+Hoisting is a JavaScript mechanism where variable and function declarations are moved to the top of their scope (global or function) during the compile phase, before the code is executed.
+
+This means:
+
+Function declarations are fully hoisted and can be called before their definition.
+
+var variables are hoisted but initialized as undefined.
+
+let and const variables are hoisted but remain in a temporal dead zone until their declaration is reached, so accessing them early causes a ReferenceError.
+
+////////////////////CODE//////////////////////////
+
+test('Hoisting example', async ({ page }) => {
+  await page.goto('https://example.com');
+  logMessage(); // ✅ works fine due to function hoisting
+
+  // console.log(testName); // ❌ ReferenceError (temporal dead zone)
+  const testName = 'Login Test';
+
+  function logMessage() {
+    console.log('Running Playwright Test');
+  }
+});
+
+-------------------------------------------------------------------------------------------------------
+
+Q2. HOISTING and SCOPING
+--------------------------
+
+2.a. What is the difference between var, let, and const in terms of scope and hoisting?
+
+var is function-scoped and hoisted with undefined. let and const are block-scoped and hoisted but not initialized (temporal dead zone).
+
+2.b. What is the Temporal Dead Zone (TDZ) in JavaScript?
+
+TDZ is the phase between entering a scope and the actual declaration where accessing a let or const variable throws a ReferenceError.
+
+2.c. Why should you avoid using var in modern JavaScript?
+
+Because var is function-scoped and hoisted, it can lead to unexpected bugs due to unintended variable shadowing or overwriting.
+
+//////////////////////////Example code with interview question :///////////////////////////
+
+for (var i = 0; i < 3; i++) {
+  setTimeout(() => console.log(i), 1000);
+}
+
+O/P :
+
+3
+3
+3
+
+
+Explanation:
+1. for (var i = 0; i < 3; i++)
+The loop runs 3 times: i = 0, 1, 2. After the loop, i = 3.
+
+After the third run, i becomes 3 and the loop ends.
+
+2. setTimeout(() => console.log(i), 1000);
+Each loop iteration schedules console.log(i) to run after 1 second.
+
+JavaScript doesn't wait—it finishes the loop first, so all timeouts run after i becomes 3.
+
+Since var is function-scoped, all callbacks share the same i, which is now 3.
+
+--------------------------------------------
+
+for (let i = 0; i < 3; i++) {
+  setTimeout(() => console.log(i), 1000);
+}
+
+O/P :
+
+0
+1
+2
+
+Explanation :
+
+Key difference: let is block-scoped
+Each loop iteration creates a fresh copy of i — this is super important!
+
+So each i inside the setTimeout() is its own separate value, not shared.
+
+“Wait 1 second, then print the value of i from this specific loop run.”
+
+Since each loop run has its own i, each scheduled console.log(i) remembers the correct number.
+
+------------------------------------------------------------------------------------------------------------
+
+3. String methods
+
+Q3. How does trim() improve reliability in form input automation?
+
+
+### ❓ **How does `trim()` improve reliability in form input automation?**
+
+### ✅ **Answer:**
+
+The `.trim()` method removes any **extra spaces** from the **start and end** of a string.
+
+In form input automation (like with Playwright or Selenium), users might accidentally enter spaces before or after their input — for example:
+
+const name = "  Ravi  ";
+
+Without `trim()`, this input will be submitted **with the spaces**, which might:
+
+* Cause form validation to fail
+* Lead to incorrect matching (e.g., login fails even with the right password)
+
+By using `trim()`, we make the input cleaner and **more reliable** for automation and testing.
+
+---
+
+### 🧪 **Example:**
+
+
+const inputName = "  Ravi  ";
+const trimmedName = inputName.trim();
+
+await page.fill('#username', trimmedName);
+
+
+This ensures you're sending **"Ravi"** (clean input), not `"  Ravi  "`.
+
+---
+
+### 💡 In simple terms:
+
+> `.trim()` helps avoid test failures caused by **accidental spaces**, making your automation more **accurate and realistic** — just like a real user input.
+
+---------------------------------------------------------------------------------------------------------
+
+
+Q4. When would you use replaceAll() in test validation?
+
+You use .replaceAll() when you need to clean or normalize text before comparing it in your test validations.
+
+Sometimes, the actual text on a webpage may contain:
+
+const displayedPrice = await page.textContent('#total'); // "$1,000"
+const expectedPrice = "1000";
+
+// Remove "$" and "," from the actual value
+const cleanedPrice = displayedPrice.replaceAll("$", "").replaceAll(",", "");
+
+expect(cleanedPrice).toBe(expectedPrice);
+
+---------------------------------------------------------------------------------------------------------
+
+Q5. Give a real-world scenario for split() and join() usage.
+
+-------------------------------------------------------------------------------------------------------------
+
+Q6. What is the difference between == and === in JavaScript? Give examples where == returns true but === returns false.	
+
+== checks for equality of values after performing type coercion if needed (loose equality).
+
+=== checks for equality of both value and type (strict equality), no type coercion.
+
+🔍 Example Where == is true but === is false:
+
+0 == false       // true  (type coercion: false becomes 0)
+0 === false      // false (number !== boolean)
+
+'5' == 5         // true  ('5' is coerced to 5)
+'5' === 5        // false (string !== number)
+
+null == undefined  // true  (special case in loose equality)
+null === undefined // false
+
+--------------------------------------------------------------------------------------------------------------------
+
+1. print login and the opentaps string from the URL?
+
+http://leaftaps.com/opentaps/control/login
+
+/////////////////////CODE///////////////////////////
+
+const url = 'http://leaftaps.com/opentaps/control/login';
+
+// Split by '/' and get the desired parts
+const parts = url.split('/');
+console.log('opentaps:', parts[3]);  // 'opentaps'
+console.log('login:', parts[5]);     // 'login'
+
+---------------------------------------------------------
+
+
+2. Change the string login to main in the given URL and launch using Playwright
+
+login -> main
+http://leaftaps.com/crmsfa/control/login
+http://leaftaps.com/crmsfa/control/main
+
+
+Original URL:
+`http://leaftaps.com/crmsfa/control/login`
+
+Target URL after replacement:
+`http://leaftaps.com/crmsfa/control/main`
+
+
+import { test } from '@playwright/test';
+
+test('Launch updated URL', async ({ page }) => {
+  let url = 'http://leaftaps.com/crmsfa/control/login';
+
+  // Replace 'login' with 'main'
+  const newUrl = url.replace('login', 'main');
+
+  // Navigate to the updated URL
+  await page.goto(newUrl);
+
+  // Print the final URL for verification
+  console.log('Navigated to:', newUrl);
+});
+
+
+-------------------------------------------------------------------------------
+
+
+
+JA Assignment Questions :
+
+1.check if a string is a palindrome?
+input: madam
+output: madam 
+
+2.find the most frequent character in a string?
+input : javascript
+
+3.count the number of vowels in a string
+input: function
+
+
+
+
+
+
